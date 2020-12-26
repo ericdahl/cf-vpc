@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  EC2VPC51X2U:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.111.0.0/16
+  Public1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref EC2VPC51X2U
+      CidrBlock: 10.111.100.0/24
+      AvailabilityZone: us-east-1a
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Public1
+  Private1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref EC2VPC51X2U
+      CidrBlock: 10.111.200.0/24
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Name
+          Value: Private1
+
+
+  IGW:
+    Type: 'AWS::EC2::InternetGateway'
+  IGWAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref EC2VPC51X2U
+      InternetGatewayId: !Ref IGW
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref EC2VPC51X2U
+      Tags:
+        - Key: Name
+          Value: Public
+  PublicIGWRoute:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref IGW
+    DependsOn:
+      - IGWAttachment
+
+
+  NatEIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+  NatGateway:
+    Type: 'AWS::EC2::NatGateway'
+    Properties:
+      SubnetId: !Ref Public1
+      AllocationId: !GetAtt NatEIP.AllocationId
+  PrivateRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref EC2VPC51X2U
+      Tags:
+        - Key: Name
+          Value: Private
+#  PrivateRouteDefault:
+#    Type: 'AWS::EC2::Route'
+#    Properties:
+#      RouteTableId: !Ref PrivateRouteTable
+#      DestinationCidrBlock: 0.0.0.0/0
+#      GatewayId: !Ref NatGateway
+
+
+Outputs:
+  PublicSubnet1:
+    Value: !Ref Public1
+
+
