@@ -39,7 +39,7 @@ Resources:
       GatewayId: !Ref IGW
     DependsOn:
       - IGWAttachment
-  Public1:
+  PublicSubnetA:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
@@ -48,12 +48,27 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: Public1
-  Public1Association:
+          Value: PublicSubnetA
+  PublicSubnetAAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
       RouteTableId: !Ref PublicRouteTable
-      SubnetId: !Ref Public1
+      SubnetId: !Ref PublicSubnetA
+  PublicSubnetB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.111.101.0/24
+      AvailabilityZone: us-east-1b
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnetB
+  PublicSubnetBAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnetB
 
 
 
@@ -66,7 +81,7 @@ Resources:
     Type: 'AWS::EC2::NatGateway'
     Condition: ShouldCreateNatGateway
     Properties:
-      SubnetId: !Ref Public1
+      SubnetId: !Ref PublicSubnetA
       AllocationId: !GetAtt NatEIP.AllocationId
 
   PrivateRouteTable:
@@ -76,7 +91,7 @@ Resources:
       Tags:
         - Key: Name
           Value: Private
-  Private1:
+  PrivateSubnetA:
     Type: 'AWS::EC2::Subnet'
     Properties:
       VpcId: !Ref VPC
@@ -84,12 +99,26 @@ Resources:
       AvailabilityZone: us-east-1a
       Tags:
         - Key: Name
-          Value: Private1
-  Private1Association:
+          Value: PrivateSubnetA
+  PrivateSubnetAAssociation:
     Type: 'AWS::EC2::SubnetRouteTableAssociation'
     Properties:
       RouteTableId: !Ref PrivateRouteTable
-      SubnetId: !Ref Private1
+      SubnetId: !Ref PrivateSubnetA
+  PrivateSubnetB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.111.201.0/24
+      AvailabilityZone: us-east-1b
+      Tags:
+        - Key: Name
+          Value: PrivateSubnetB
+  PrivateSubnetBAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref PrivateSubnetB
           
           
   PrivateRouteDefault:
@@ -103,6 +132,6 @@ Resources:
 
 Outputs:
   PublicSubnet1:
-    Value: !Ref Public1
+    Value: !Ref PublicSubnetA
 
 
