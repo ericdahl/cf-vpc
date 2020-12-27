@@ -131,7 +131,14 @@ Resources:
 
 
 Outputs:
-  PublicSubnet1:
+  VpcId:
+    Value: !Ref VPC
+  PublicSubnetA:
     Value: !Ref PublicSubnetA
-
+  PublicSubnetB:
+    Value: !Ref PublicSubnetB
+  PrivateSubnetA:
+    Value: !Ref PrivateSubnetA
+  PrivateSubnetB:
+    Value: !Ref PrivateSubnetB
 
