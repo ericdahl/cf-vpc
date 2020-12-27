@@ -1,13 +1,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  EC2VPC51X2U:
+  VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
       CidrBlock: 10.111.0.0/16
   Public1:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      VpcId: !Ref EC2VPC51X2U
+      VpcId: !Ref VPC
       CidrBlock: 10.111.100.0/24
       AvailabilityZone: us-east-1a
       MapPublicIpOnLaunch: true
@@ -17,7 +17,7 @@ Resources:
   Private1:
     Type: 'AWS::EC2::Subnet'
     Properties:
-      VpcId: !Ref EC2VPC51X2U
+      VpcId: !Ref VPC
       CidrBlock: 10.111.200.0/24
       AvailabilityZone: us-east-1a
       Tags:
@@ -30,12 +30,12 @@ Resources:
   IGWAttachment:
     Type: 'AWS::EC2::VPCGatewayAttachment'
     Properties:
-      VpcId: !Ref EC2VPC51X2U
+      VpcId: !Ref VPC
       InternetGatewayId: !Ref IGW
   PublicRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
-      VpcId: !Ref EC2VPC51X2U
+      VpcId: !Ref VPC
       Tags:
         - Key: Name
           Value: Public
@@ -61,7 +61,7 @@ Resources:
   PrivateRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
-      VpcId: !Ref EC2VPC51X2U
+      VpcId: !Ref VPC
       Tags:
         - Key: Name
           Value: Private
