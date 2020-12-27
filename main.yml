@@ -1,28 +1,20 @@
 AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  CreateNatGateway:
+    Type: String
+    AllowedValues: [true, false]
+    Default: true
+
+Conditions:
+  ShouldCreateNatGateway:
+    !Equals [true, !Ref CreateNatGateway]
+
 Resources:
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
       CidrBlock: 10.111.0.0/16
-  Public1:
-    Type: 'AWS::EC2::Subnet'
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.111.100.0/24
-      AvailabilityZone: us-east-1a
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: Public1
-  Private1:
-    Type: 'AWS::EC2::Subnet'
-    Properties:
-      VpcId: !Ref VPC
-      CidrBlock: 10.111.200.0/24
-      AvailabilityZone: us-east-1a
-      Tags:
-        - Key: Name
-          Value: Private1
 
 
   IGW:
@@ -47,6 +39,23 @@ Resources:
       GatewayId: !Ref IGW
     DependsOn:
       - IGWAttachment
+  Public1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.111.100.0/24
+      AvailabilityZone: us-east-1a
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Public1
+  Public1Association:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref Public1
+
+
 
 
   NatEIP:
@@ -55,9 +64,11 @@ Resources:
       Domain: vpc
   NatGateway:
     Type: 'AWS::EC2::NatGateway'
+    Condition: ShouldCreateNatGateway
     Properties:
       SubnetId: !Ref Public1
       AllocationId: !GetAtt NatEIP.AllocationId
+
   PrivateRouteTable:
     Type: 'AWS::EC2::RouteTable'
     Properties:
@@ -65,12 +76,29 @@ Resources:
       Tags:
         - Key: Name
           Value: Private
-#  PrivateRouteDefault:
-#    Type: 'AWS::EC2::Route'
-#    Properties:
-#      RouteTableId: !Ref PrivateRouteTable
-#      DestinationCidrBlock: 0.0.0.0/0
-#      GatewayId: !Ref NatGateway
+  Private1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.111.200.0/24
+      AvailabilityZone: us-east-1a
+      Tags:
+        - Key: Name
+          Value: Private1
+  Private1Association:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      SubnetId: !Ref Private1
+          
+          
+  PrivateRouteDefault:
+    Type: 'AWS::EC2::Route'
+    Condition: ShouldCreateNatGateway
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway
 
 
 Outputs:
